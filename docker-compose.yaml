@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:14.4-alpine
+    restart: always
+    command: postgres -c 'max_connections=2000' && chmod +x /docker-entrypoint-initdb.d/init-database.sh
+    container_name: postgres_fiffift
+    environment:
+      POSTGRES_PASSWORD: admin
+      FIFFIFT_SCHEMA: fiffift
+      FIFFIFT_USER: fiffift
+      FIFFIFT_PASSWORD: fiffift
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init_database.sh:/docker-entrypoint-initdb.d/init-database.sh
+
+volumes:
+  postgres_data:
