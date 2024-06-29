@@ -15,7 +15,8 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { getAllExpenses } from "./_actions/expenses_actions";
 
 const expenseTypes = [
   { label: "Essentials", value: "ESSENTIALS" },
@@ -38,101 +39,24 @@ const months = [
   { code: "Dec", index: 11 },
 ];
 
-const expenses = [
-  {
-    id: 1,
-    description: "Gas bills",
-    type: "ESSENTIAL",
-    recurrent: true,
-    expenseRecords: [
-      {
-        id: 1,
-        year: 2024,
-        month: 4,
-        amount: 124.4,
-      },
-      {
-        id: 2,
-        year: 2024,
-        month: 5,
-        amount: 41.45,
-      },
-      {
-        id: 3,
-        year: 2024,
-        month: 6,
-        amount: 13,
-      },
-    ],
-  },
-  {
-    id: 2,
-    description: "Sports bets",
-    type: "INVESTMENT",
-    recurrent: true,
-    expenseRecords: [
-      {
-        id: 4,
-        year: 2024,
-        month: 0,
-        amount: 1434.4,
-      },
-      {
-        id: 5,
-        year: 2024,
-        month: 3,
-        amount: 654.45,
-      },
-      {
-        id: 6,
-        year: 2024,
-        month: 4,
-        amount: 4565,
-      },
-    ],
-  },
-  {
-    id: 3,
-    description: "Credit Card",
-    type: "LEISURE",
-    recurrent: true,
-    expenseRecords: [
-      {
-        id: 7,
-        year: 2024,
-        month: 3,
-        amount: 23435.12,
-      },
-      {
-        id: 8,
-        year: 2024,
-        month: 6,
-        amount: 324.45,
-      },
-      {
-        id: 9,
-        year: 2024,
-        month: 11,
-        amount: 12,
-      },
-    ],
-  },
-];
-
 export default function YearlyExpenses() {
+  const [rows, setRows] = useState([]);
   const [showEditNewRow, setShowEditNewRow] = useState(false);
   const [editingCell, setEditingCell] = useState({
     rowId: null,
     column: null,
   });
 
-  const [lastChangedExpense, setLastChangedExpense] = useState({
-    id: null,
-    description: null,
-    expenseRecords: [{ year: null, month: null, amount: null }],
-  });
-
   const newRowFormRef = useRef();
+
+  useEffect(() => {
+    async function fetchData() {
+      const newRows = await getAllExpenses();
+      setRows(newRows);
+    }
+
+    fetchData();
+  }, []);
 
   const handleEdit = (rowId, column) => {
     setEditingCell({ rowId, column });
@@ -142,87 +66,34 @@ export default function YearlyExpenses() {
     setShowEditNewRow(!showEditNewRow);
   };
 
-  const handleChange = (event, rowId, column) => {
-    let newLastChangedExpense;
-    if (lastChangedExpense && lastChangedExpense.id === null) {
-      newLastChangedExpense = expenses
-        .filter((expense) => expense.id === rowId)
-        .pop();
-    } else {
-      newLastChangedExpense = lastChangedExpense;
-    }
-
-    const newRows = [...rows];
-    if (column === "Description") {
-      newRows
-        .filter((row) => row.id === rowId)
-        .forEach((row) => {
-          newLastChangedExpense.description = event.target.value;
-
-          row.description = event.target.value;
-        });
-    } else {
-      newRows
-        .filter((row) => row.id === rowId)
-        .forEach((row) => {
-          const monthIndex = getIndexForMonthCode(column);
-          newLastChangedExpense.expenseRecords = [
-            ...newLastChangedExpense.expenseRecords,
-            { year: 2024, month: monthIndex, amount: event.target.value },
-          ];
-
-          row[`amount${column}`] = event.target.value;
-        });
-    }
-
-    setLastChangedExpense(newLastChangedExpense);
-    setRows(newRows);
-  };
-
-  const handleKeyDown = (event) => {
+  const handleKeyDown = (event, rowId, column) => {
     if (event.key === "Escape") {
       setEditingCell({ rowId: null, column: null });
     }
     if (event.key === "Enter") {
       setEditingCell({ rowId: null, column: null });
-      console.log(lastChangedExpense); //TODO here I can call an action to "PUT" this expense
+      const newValue = event.target.value;
+      console.log(
+        JSON.stringify({
+          rowId: rowId,
+          column: column,
+          value: newValue,
+        })
+      ); //TODO here I can call an action to "PUT" this expense
     }
   };
-
-  const columns = ["Description", ...months.map((month) => month.code)];
-
-  const initRows = expenses.map((expense) => {
-    let row = {
-      id: expense.id,
-      description: expense.description,
-    };
-
-    months.forEach((month) => {
-      const records = expense.expenseRecords.filter(
-        (record) => record.month === month.index
-      );
-
-      if (records.length > 0) {
-        row[`amount${month.code}`] = records[0].amount;
-      }
-    });
-
-    return row;
-  });
 
   const handleNewRowSubmit = async (formData) => {
     const newRow = Object.fromEntries(formData.entries());
     console.log("new row: " + JSON.stringify(newRow));
     //TODO save new row in db
     setRows((previousRows) => {
-      const savedRow = { ...newRow, id: 987897 };
+      const savedRow = { ...newRow, id: 987897, expenseRecords: [] };
       console.log("saved row: " + JSON.stringify(savedRow));
       newRowFormRef.current.reset();
       return [...previousRows, savedRow];
     });
   };
-
-  const [rows, setRows] = useState(initRows);
 
   const totalWithLeisureRow = {
     name: "Total with leisure",
@@ -262,37 +133,59 @@ export default function YearlyExpenses() {
         <Table>
           <TableHead>
             <TableRow>
-              {columns.map((column) => (
-                <TableCell key={column}>{column}</TableCell>
+              <TableCell>Description</TableCell>
+              {months.map((month) => (
+                <TableCell key={month.code}>{month.code}</TableCell>
               ))}
             </TableRow>
           </TableHead>
           <TableBody>
             {rows.map((row) => (
               <TableRow key={row.id}>
-                {columns.map((column) => (
+                <TableCell
+                  onClick={() => handleEdit(row.id, "description")}
+                  sx={{ cursor: "pointer" }}
+                >
+                  {editingCell.rowId === row.id &&
+                  editingCell.column === "description" ? (
+                    <TextField
+                      name="cellFieldText"
+                      value={row.description}
+                      onKeyDown={(event) =>
+                        handleKeyDown(event, row.id, "description")
+                      }
+                      autoFocus
+                    />
+                  ) : (
+                    <Typography sx={{ cursor: "pointer" }}>
+                      {row.description}
+                    </Typography>
+                  )}
+                </TableCell>
+                {months.map((month) => (
                   <TableCell
-                    key={`${row.id}-${column}`}
-                    onClick={() => handleEdit(row.id, column)}
+                    key={`${row.id}-${month.index}`}
+                    onClick={() => handleEdit(row.id, month.index)}
                     sx={{ cursor: "pointer" }}
                   >
                     {editingCell.rowId === row.id &&
-                    editingCell.column === column ? (
+                    editingCell.column === month.index ? (
                       //TODO reset and hide when lose focus
                       //TODO reset and hide when 'esc' is pressed
-                      createEditableFieldForColumn(
-                        column,
-                        column === "Description"
-                          ? row.description
-                          : row[`amount${column}`],
-                        (event) => handleChange(event, row.id, column),
-                        (event) => handleKeyDown(event)
-                      )
+                      <TextField
+                        name="cellFieldNumber"
+                        InputProps={{
+                          inputComponent: NumericFormatCustomInput,
+                        }}
+                        value={getAmountForMonth(row, month.index)}
+                        onKeyDown={(event) =>
+                          handleKeyDown(event, row.id, month.index)
+                        }
+                        autoFocus
+                      />
                     ) : (
                       <Typography sx={{ cursor: "pointer" }}>
-                        {column === "Description"
-                          ? row.description
-                          : row[`amount${column}`]}
+                        {getAmountForMonth(row, month.index)}
                       </Typography>
                     )}
                   </TableCell>
@@ -314,7 +207,7 @@ export default function YearlyExpenses() {
                 )}
               </TableCell>
             </TableRow>
-            <TableRow>
+            {/* <TableRow>
               <TableCell>{totalWithLeisureRow.name}</TableCell>
               {columns.map(
                 (column, index) =>
@@ -335,11 +228,19 @@ export default function YearlyExpenses() {
                     </TableCell>
                   )
               )}
-            </TableRow>
+            </TableRow> */}
           </TableBody>
         </Table>
       </TableContainer>
     </>
+  );
+}
+
+function getAmountForMonth(expense, monthIndex) {
+  return (
+    expense.expenseRecords
+      .filter((expense) => expense.month === monthIndex)
+      .pop()?.amount || null
   );
 }
 
@@ -383,21 +284,16 @@ function createNewRowForm(
   );
 }
 
-function createEditableFieldForColumn(column, value, onChange, onKeyDown) {
+function createEditableFieldForColumn(rowId, column, value, onKeyDown) {
   return column === "Description" ? (
-    <TextField
-      value={value}
-      onChange={onChange}
-      onKeyDown={onKeyDown}
-      autoFocus
-    />
+    <TextField name="cellField" value={value} onKeyDown={onKeyDown} autoFocus />
   ) : (
     <TextField
+      name="cellField"
       InputProps={{
         inputComponent: NumericFormatCustomInput,
       }}
       value={value}
-      onChange={onChange}
       onKeyDown={onKeyDown}
       autoFocus
     />

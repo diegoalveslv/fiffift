@@ -4,7 +4,7 @@ import NumericFormatCustomInput from "@/components/NumericFormatCustomInput";
 import { Button, Grid, TextField } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useFormState } from "react-dom";
-import { getLastIncome, saveIncome } from "../_actions/income_actions";
+import { getLastIncome, saveIncome } from "./_actions/income_actions";
 
 /*TODO check if this whole page is required to 'use client'
 TODO I think there is a better way of handling data fetching. Should look into it later
