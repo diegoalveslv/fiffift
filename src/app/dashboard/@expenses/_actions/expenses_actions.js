@@ -1,5 +1,6 @@
 "use server";
 
+import { parseToCents } from "@/utils/money.js";
 import { revalidatePath } from "next/cache.js";
 import * as expensesRepository from "./expenses_repository.js";
 
@@ -37,6 +38,41 @@ export async function createExpense(expense) {
   return result;
 }
 
+export async function patchExpense(patchRequest) {
+  //FIXME simulate slowness
+  await new Promise((resolve) => setTimeout(resolve, 2000));
+
+  console.log("patchExpense() called with: ", patchRequest);
+  if ("description" in patchRequest) {
+    await expensesRepository.updateExpenseDescription(
+      patchRequest.id,
+      patchRequest.description
+    );
+  }
+  if ("monthIndex" in patchRequest) {
+    const expenseRecordExists = await expensesRepository.expenseRecordExists(
+      patchRequest.id,
+      patchRequest.monthIndex
+    );
+    if (expenseRecordExists) {
+      await expensesRepository.updateExpenseMonthIndex(
+        patchRequest.id,
+        patchRequest.monthIndex,
+        parseToCents(patchRequest.amount)
+      );
+    } else {
+      await expensesRepository.insertExpenseRecord(
+        patchRequest.id,
+        2024,
+        patchRequest.monthIndex,
+        parseToCents(patchRequest.amount)
+      );
+    }
+  }
+
+  revalidatePath("/dashboard");
+}
+
 function groupExpenses(data) {
   const grouped = {};
 
@@ -55,7 +91,7 @@ function groupExpenses(data) {
         id: item.expense_record_id,
         year: item.year,
         month: item.month,
-        amount: item.amount,
+        amount: item.amount / 100,
       });
     }
   });

@@ -3,6 +3,8 @@
 import NumericFormatCustomInput from "@/components/NumericFormatCustomInput";
 import {
   Button,
+  CircularProgress,
+  InputAdornment,
   Table,
   TableBody,
   TableCell,
@@ -12,8 +14,9 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import CreateNewRowForm from "./CreateNewRowForm";
+import { patchExpense } from "./_actions/expenses_actions";
 
 const months = [
   { code: "Jan", index: 0 },
@@ -36,6 +39,7 @@ export default function YearlyExpenses({ rows }) {
     rowId: null,
     column: null,
   });
+  const [isPending, startTransition] = useTransition();
 
   const handleEdit = (rowId, column) => {
     setEditingCell({ rowId, column });
@@ -50,15 +54,17 @@ export default function YearlyExpenses({ rows }) {
       setEditingCell({ rowId: null, column: null });
     }
     if (event.key === "Enter") {
-      setEditingCell({ rowId: null, column: null });
       const newValue = event.target.value;
-      console.log(
-        JSON.stringify({
-          rowId: rowId,
-          column: column,
-          value: newValue,
-        })
-      ); //TODO here I can call an action to "PUT" this expense
+
+      const patchReq =
+        column === "description"
+          ? { id: rowId, description: newValue }
+          : { id: rowId, monthIndex: column, amount: newValue };
+
+      startTransition(async () => {
+        await patchExpense(patchReq);
+        setEditingCell({ rowId: null, column: null });
+      });
     }
   };
 
@@ -117,7 +123,15 @@ export default function YearlyExpenses({ rows }) {
                   editingCell.column === "description" ? (
                     <TextField
                       name="cellFieldText"
-                      value={row.description}
+                      disabled={isPending}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            {isPending && <CircularProgress size={20} />}
+                          </InputAdornment>
+                        ),
+                      }}
+                      defaultValue={row.description}
                       onKeyDown={(event) =>
                         handleKeyDown(event, row.id, "description")
                       }
@@ -141,10 +155,16 @@ export default function YearlyExpenses({ rows }) {
                       //TODO reset and hide when 'esc' is pressed
                       <TextField
                         name="cellFieldNumber"
+                        disabled={isPending}
                         InputProps={{
                           inputComponent: NumericFormatCustomInput,
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              {isPending && <CircularProgress size={20} />}
+                            </InputAdornment>
+                          ),
                         }}
-                        value={getAmountForMonth(row, month.index)}
+                        defaultValue={getAmountForMonth(row, month.index)}
                         onKeyDown={(event) =>
                           handleKeyDown(event, row.id, month.index)
                         }

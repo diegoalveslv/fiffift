@@ -1,5 +1,6 @@
 "use server";
 
+import { parseToCents } from "@/utils/money";
 import * as incomeRepository from "./income_repository";
 
 /*TODO- do validations with zod
@@ -33,12 +34,6 @@ export async function getLastIncome() {
     extras: income ? income.extras / 100 : null,
   };
   return incomeDTO;
-}
-
-function parseToCents(money) {
-  return (
-    parseFloat(money.replace(".", "").replace("R$", "").replace(",", ".")) * 100
-  );
 }
 
 function validate(formData) {

@@ -17,7 +17,8 @@ export async function getAllExpenses() {
   `;
 
   const res = await query(myQuery);
-  console.log("repository.getAllExpenses() result: ", res.rows);
+  // console.log("repository.getAllExpenses() result: ", res.rows);
+  console.log("repository.getAllExpenses() result size: ", res.rows.length);
   return res.rows;
 }
 
@@ -37,4 +38,43 @@ export async function existsExpensesBy(description, type) {
   const res = await query(myQuery, [description, type]);
   console.log("repository.existsExpensesBy() result: ", res.rows);
   return res.rows.length > 0;
+}
+
+export async function updateExpenseDescription(id, description) {
+  const myQuery = `
+    update expense set description = $1 where id = $2 returning *;
+  `;
+  const res = await query(myQuery, [description, id]);
+  console.log("repository.updateExpenseDescription() result: ", res.rows);
+}
+
+export async function updateExpenseMonthIndex(id, monthIndex, amount) {
+  const myQuery = `
+    update expense_record set amount = $3 where expense_id = $1 and month = $2 returning *;
+  `;
+  const res = await query(myQuery, [id, monthIndex, amount]);
+  console.log("repository.updateExpenseMonthIndex() result: ", res.rows);
+}
+
+export async function expenseRecordExists(expense_id, monthIndex) {
+  const myQuery = `
+    select 1 from expense_record where expense_id = $1 and month = $2 limit 1;
+  `;
+  const res = await query(myQuery, [expense_id, monthIndex]);
+  console.log("repository.expenseRecordExists() result: ", res.rows);
+  return res.rows.length > 0;
+}
+
+export async function insertExpenseRecord(
+  expense_id,
+  year,
+  monthIndex,
+  amount
+) {
+  const myQuery = `
+    insert into expense_record (expense_id, year, month, amount) values ($1, $2, $3, $4) returning *;
+  `;
+  const res = await query(myQuery, [expense_id, year, monthIndex, amount]);
+  console.log("repository.insertExpenseRecord() result: ", res.rows);
+  return res.rows[0];
 }
