@@ -28,9 +28,9 @@ export async function saveIncome(prevState, formData) {
 export async function getLastIncome() {
   const income = await incomeRepository.getLastIncome();
   const incomeDTO = {
-    salary: income.salary / 100,
-    mealTicket: income.meal_ticket / 100,
-    extras: income.extras / 100,
+    salary: income ? income.salary / 100 : null,
+    mealTicket: income ? income.meal_ticket / 100 : null,
+    extras: income ? income.extras / 100 : null,
   };
   return incomeDTO;
 }

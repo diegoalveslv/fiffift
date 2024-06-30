@@ -2,37 +2,26 @@
 
 import NumericFormatCustomInput from "@/components/NumericFormatCustomInput";
 import { Button, Grid, TextField } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useFormState } from "react-dom";
-import { getLastIncome, saveIncome } from "./_actions/income_actions";
+import { saveIncome } from "./_actions/income_actions";
 
-/*TODO check if this whole page is required to 'use client'
-TODO I think there is a better way of handling data fetching. Should look into it later
+/*
 TODO add loading to fields
 TODO handle unexpected database errors
  */
 
-export default function IncomeForm() {
+export default function IncomeForm({ formData }) {
   const [formState, formAction] = useFormState(saveIncome, { errors: {} });
   const [values, setValues] = useState({
-    salary: null,
-    mealTicket: null,
-    extras: null,
-    total: 0,
+    salary: formData?.salary || null,
+    mealTicket: formData?.mealTicket || null,
+    extras: formData?.extras || null,
+    total:
+      (formData?.salary || 0) +
+      (formData?.mealTicket || 0) +
+      (formData?.extras || 0),
   });
-
-  useEffect(() => {
-    async function fetchData() {
-      const income = await getLastIncome();
-      if (income) {
-        setValues({
-          ...income,
-          total: income.salary + income.mealTicket + income.extras,
-        });
-      }
-    }
-    fetchData();
-  }, []);
 
   const handleChange = (event) => {
     setValues((previousValues) => {
