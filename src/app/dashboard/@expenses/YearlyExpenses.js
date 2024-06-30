@@ -2,10 +2,7 @@
 
 import NumericFormatCustomInput from "@/components/NumericFormatCustomInput";
 import {
-  Box,
   Button,
-  MenuItem,
-  Select,
   Table,
   TableBody,
   TableCell,
@@ -15,14 +12,8 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useEffect, useRef, useState } from "react";
-import { getAllExpenses } from "./_actions/expenses_actions";
-
-const expenseTypes = [
-  { label: "Essentials", value: "ESSENTIALS" },
-  { label: "Investment", value: "INVESTMENT" },
-  { label: "Leisure", value: "LEISURE" },
-];
+import { useState } from "react";
+import CreateNewRowForm from "./CreateNewRowForm";
 
 const months = [
   { code: "Jan", index: 0 },
@@ -39,24 +30,12 @@ const months = [
   { code: "Dec", index: 11 },
 ];
 
-export default function YearlyExpenses() {
-  const [rows, setRows] = useState([]);
+export default function YearlyExpenses({ rows }) {
   const [showEditNewRow, setShowEditNewRow] = useState(false);
   const [editingCell, setEditingCell] = useState({
     rowId: null,
     column: null,
   });
-
-  const newRowFormRef = useRef();
-
-  useEffect(() => {
-    async function fetchData() {
-      const newRows = await getAllExpenses();
-      setRows(newRows);
-    }
-
-    fetchData();
-  }, []);
 
   const handleEdit = (rowId, column) => {
     setEditingCell({ rowId, column });
@@ -81,18 +60,6 @@ export default function YearlyExpenses() {
         })
       ); //TODO here I can call an action to "PUT" this expense
     }
-  };
-
-  const handleNewRowSubmit = async (formData) => {
-    const newRow = Object.fromEntries(formData.entries());
-    console.log("new row: " + JSON.stringify(newRow));
-    //TODO save new row in db
-    setRows((previousRows) => {
-      const savedRow = { ...newRow, id: 987897, expenseRecords: [] };
-      console.log("saved row: " + JSON.stringify(savedRow));
-      newRowFormRef.current.reset();
-      return [...previousRows, savedRow];
-    });
   };
 
   const totalWithLeisureRow = {
@@ -195,11 +162,7 @@ export default function YearlyExpenses() {
             <TableRow>
               <TableCell colSpan={months.length + 1}>
                 {showEditNewRow ? (
-                  createNewRowForm(
-                    handleNewRowSubmit,
-                    newRowFormRef,
-                    toggleAddNewRowForm
-                  )
+                  <CreateNewRowForm toggleAddNewRowForm={toggleAddNewRowForm} />
                 ) : (
                   <Button variant="text" onClick={toggleAddNewRowForm}>
                     + add new row
@@ -241,46 +204,6 @@ function getAmountForMonth(expense, monthIndex) {
     expense.expenseRecords
       .filter((expense) => expense.month === monthIndex)
       .pop()?.amount || null
-  );
-}
-
-function createNewRowForm(
-  handleNewRowSubmit,
-  newRowFormRef,
-  toggleAddNewRowForm
-) {
-  return (
-    <form action={handleNewRowSubmit} ref={newRowFormRef}>
-      <Box
-        sx={{
-          display: "flex",
-          gap: 2,
-          flexDirection: "row",
-        }}
-      >
-        <TextField name="description" label="Description" autoFocus />
-        <Select
-          labelId="demo-simple-select-helper-label"
-          name="type"
-          label="Type"
-          required
-          value={expenseTypes[0].value}
-        >
-          {expenseTypes.map((type) => (
-            <MenuItem key={type.value} value={type.value}>
-              {type.label}
-            </MenuItem>
-          ))}
-        </Select>
-
-        <Button type="submit" variant="contained">
-          save
-        </Button>
-        <Button type="button" variant="outlined" onClick={toggleAddNewRowForm}>
-          close
-        </Button>
-      </Box>
-    </form>
   );
 }
 

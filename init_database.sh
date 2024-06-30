@@ -40,7 +40,7 @@ CREATE TABLE fiffift.expense(
     id serial primary key,
     description varchar(120) not null,
     type varchar(30) not null,
-    recurrent boolean,
+    recurrent boolean default false,
     constraint expense_uq1 unique (description, type)
 );
 
@@ -71,5 +71,8 @@ INSERT INTO fiffift.expense_record (id, expense_id, year, month, amount) VALUES
 (7, 3, 2024, 3, 23435),
 (8, 3, 2024, 6, 324),
 (9, 3, 2024, 11, 12);
+
+select setval('fiffift.expense_id_seq', (select max(id) + 1 from fiffift.expense));
+select setval('fiffift.expense_record_id_seq', (select max(id) + 1 from fiffift.expense_record));
 
 EOSQL
