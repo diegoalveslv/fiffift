@@ -1,6 +1,16 @@
 import { forwardRef } from "react";
 import { NumericFormat } from "react-number-format";
 
+export const NumericFormatProps = {
+  thousandSeparator: ".",
+  decimalSeparator: ",",
+  allowNegative: false,
+  decimalScale: 2,
+  valueIsNumericString: true,
+  fixedDecimalScale: true,
+  prefix: "R$",
+};
+
 const NumericFormatCustomInput = forwardRef(
   function NumericFormatCustom(props, ref) {
     const { onChange, ...other } = props;
@@ -17,13 +27,7 @@ const NumericFormatCustomInput = forwardRef(
             },
           });
         }}
-        thousandSeparator="."
-        decimalSeparator=","
-        allowNegative={false}
-        decimalScale={2}
-        valueIsNumericString
-        fixedDecimalScale={true}
-        prefix="R$"
+        {...NumericFormatProps}
       />
     );
   }

@@ -1,6 +1,8 @@
 "use client";
 
-import NumericFormatCustomInput from "@/components/NumericFormatCustomInput";
+import NumericFormatCustomInput, {
+  NumericFormatProps,
+} from "@/components/NumericFormatCustomInput";
 import {
   Button,
   CircularProgress,
@@ -15,6 +17,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useState, useTransition } from "react";
+import { NumericFormat } from "react-number-format";
 import CreateNewRowForm from "./CreateNewRowForm";
 import { patchExpense } from "./_actions/expenses_actions";
 
@@ -41,17 +44,21 @@ export default function YearlyExpenses({ rows }) {
   });
   const [isPending, startTransition] = useTransition();
 
-  const handleEdit = (rowId, column) => {
+  const handleEditCell = (rowId, column) => {
     setEditingCell({ rowId, column });
+  };
+
+  const resetEditCell = () => {
+    setEditingCell({ rowId: null, column: null });
   };
 
   const toggleAddNewRowForm = () => {
     setShowEditNewRow(!showEditNewRow);
   };
 
-  const handleKeyDown = (event, rowId, column) => {
+  const handleCellKeyDown = (event, rowId, column) => {
     if (event.key === "Escape") {
-      setEditingCell({ rowId: null, column: null });
+      resetEditCell();
     }
     if (event.key === "Enter") {
       const newValue = event.target.value;
@@ -63,7 +70,7 @@ export default function YearlyExpenses({ rows }) {
 
       startTransition(async () => {
         await patchExpense(patchReq);
-        setEditingCell({ rowId: null, column: null });
+        resetEditCell();
       });
     }
   };
@@ -116,7 +123,7 @@ export default function YearlyExpenses({ rows }) {
             {rows.map((row) => (
               <TableRow key={row.id}>
                 <TableCell
-                  onClick={() => handleEdit(row.id, "description")}
+                  onClick={() => handleEditCell(row.id, "description")}
                   sx={{ cursor: "pointer" }}
                 >
                   {editingCell.rowId === row.id &&
@@ -133,8 +140,9 @@ export default function YearlyExpenses({ rows }) {
                       }}
                       defaultValue={row.description}
                       onKeyDown={(event) =>
-                        handleKeyDown(event, row.id, "description")
+                        handleCellKeyDown(event, row.id, "description")
                       }
+                      onBlur={resetEditCell}
                       autoFocus
                     />
                   ) : (
@@ -146,13 +154,11 @@ export default function YearlyExpenses({ rows }) {
                 {months.map((month) => (
                   <TableCell
                     key={`${row.id}-${month.index}`}
-                    onClick={() => handleEdit(row.id, month.index)}
+                    onClick={() => handleEditCell(row.id, month.index)}
                     sx={{ cursor: "pointer" }}
                   >
                     {editingCell.rowId === row.id &&
                     editingCell.column === month.index ? (
-                      //TODO reset and hide when lose focus
-                      //TODO reset and hide when 'esc' is pressed
                       <TextField
                         name="cellFieldNumber"
                         disabled={isPending}
@@ -166,13 +172,18 @@ export default function YearlyExpenses({ rows }) {
                         }}
                         defaultValue={getAmountForMonth(row, month.index)}
                         onKeyDown={(event) =>
-                          handleKeyDown(event, row.id, month.index)
+                          handleCellKeyDown(event, row.id, month.index)
                         }
+                        onBlur={resetEditCell}
                         autoFocus
                       />
                     ) : (
                       <Typography sx={{ cursor: "pointer" }}>
-                        {getAmountForMonth(row, month.index)}
+                        <NumericFormat
+                          value={getAmountForMonth(row, month.index)}
+                          displayType="text"
+                          {...NumericFormatProps}
+                        />
                       </Typography>
                     )}
                   </TableCell>
@@ -225,27 +236,4 @@ function getAmountForMonth(expense, monthIndex) {
       .filter((expense) => expense.month === monthIndex)
       .pop()?.amount || null
   );
-}
-
-function createEditableFieldForColumn(rowId, column, value, onKeyDown) {
-  return column === "Description" ? (
-    <TextField name="cellField" value={value} onKeyDown={onKeyDown} autoFocus />
-  ) : (
-    <TextField
-      name="cellField"
-      InputProps={{
-        inputComponent: NumericFormatCustomInput,
-      }}
-      value={value}
-      onKeyDown={onKeyDown}
-      autoFocus
-    />
-  );
-}
-
-function getIndexForMonthCode(monthCode) {
-  return months
-    .filter((month) => month.code === monthCode)
-    .map((month) => month.index)
-    .pop();
 }
