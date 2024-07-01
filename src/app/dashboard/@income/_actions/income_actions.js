@@ -1,6 +1,7 @@
 "use server";
 
 import { parseToCents } from "@/utils/money";
+import { revalidatePath } from "next/cache";
 import * as incomeRepository from "./income_repository";
 
 /*TODO- do validations with zod
@@ -23,6 +24,8 @@ export async function saveIncome(prevState, formData) {
 
   const createdIncome = incomeRepository.createIncome(income);
   console.log("created income: " + JSON.stringify(createdIncome));
+  revalidatePath("/dashboard");
+
   return {};
 }
 

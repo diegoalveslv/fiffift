@@ -235,7 +235,7 @@ export class ExpensesSummary {
         </TableCell>
         <TableCell colSpan={3}>
           <Typography>
-            AmountLeft:{" "}
+            Amount left:{" "}
             <NumericFormat
               value={amountLeft}
               displayType="text"
