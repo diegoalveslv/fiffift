@@ -211,7 +211,7 @@ export class ExpensesSummary {
     );
   }
 
-  makeTotalAndAmountLeftTableRow() {
+  calculateTotalExpensesAndAmountLeft() {
     const [essentialsTotal, investmentTotal, leisureTotal] =
       this.calculateTotalsPerType();
 
@@ -221,6 +221,12 @@ export class ExpensesSummary {
       (this.incomeIdealDivision.essentials +
         this.incomeIdealDivision.investment +
         this.incomeIdealDivision.leisure);
+    return [totalExpenses, amountLeft];
+  }
+
+  makeTotalAndAmountLeftTableRow() {
+    const [totalExpenses, amountLeft] =
+      this.calculateTotalExpensesAndAmountLeft();
     return (
       <TableRow>
         <TableCell colSpan={3}>
@@ -245,5 +251,11 @@ export class ExpensesSummary {
         </TableCell>
       </TableRow>
     );
+  }
+
+  monthlyCostOfLiving() {
+    const [essentialsTotal, investmentTotal, leisureTotal] =
+      this.calculateTotalsPerType();
+    return essentialsTotal + leisureTotal;
   }
 }

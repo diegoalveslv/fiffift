@@ -1,6 +1,8 @@
+import NumericFormatTextDisplay from "@/components/NumericFormatTextDisplay";
 import { Alert, Box, Container, Paper, Typography } from "@mui/material";
 import { getAllExpenses } from "../@expenses/_actions/expenses_actions";
 import { getLastIncome } from "../@income/_actions/income_actions";
+import { ExpensesSummary } from "./ExpensesSummary";
 import SummaryGrid from "./SummaryGrid";
 
 export default async function SummaryPage() {
@@ -15,6 +17,38 @@ export default async function SummaryPage() {
   };
 
   const expensesAverage = groupsExpenseRecords(expenses);
+  const expensesSummary = new ExpensesSummary(
+    incomeIdealDivision,
+    expensesAverage
+  );
+
+  const monthlyCostOfLiving = expensesSummary.monthlyCostOfLiving();
+  const [totalExpenses, amountLeft] =
+    expensesSummary.calculateTotalExpensesAndAmountLeft();
+  const alerts = [
+    {
+      id: 1,
+      severity: "warning",
+      message: (
+        <Typography>
+          If I get fucked, my monthly cost of living is:{" "}
+          <NumericFormatTextDisplay value={monthlyCostOfLiving} />
+          {"  "}
+          (x4 = <NumericFormatTextDisplay value={monthlyCostOfLiving * 4} />)
+        </Typography>
+      ),
+    },
+    {
+      id: 2,
+      severity: "info",
+      message: (
+        <Typography>
+          I can spend, invest or donate this amount:
+          <NumericFormatTextDisplay value={amountLeft} />
+        </Typography>
+      ),
+    },
+  ];
 
   return (
     <Container component={Paper} sx={{ py: 2 }}>
@@ -32,12 +66,12 @@ export default async function SummaryPage() {
           expensesAverage={expensesAverage}
           expenses={expenses}
         />
-        <Alert severity="info">
-          Here is a gentle confirmation that your action was successful.
-        </Alert>
-        <Alert severity="warning">
-          Here is a gentle confirmation that your action was successful.
-        </Alert>
+
+        {alerts.map((alert) => (
+          <Alert key={alert.id} severity={alert.severity}>
+            {alert.message}
+          </Alert>
+        ))}
       </Box>
     </Container>
   );
