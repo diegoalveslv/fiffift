@@ -40,26 +40,38 @@ export async function createExpense(expense) {
 
 export async function patchExpense(patchRequest) {
   //FIXME simulate slowness
-  await new Promise((resolve) => setTimeout(resolve, 2000));
+  await new Promise((resolve) => setTimeout(resolve, 1000));
 
   console.log("patchExpense() called with: ", patchRequest);
   if ("description" in patchRequest) {
-    await expensesRepository.updateExpenseDescription(
-      patchRequest.id,
-      patchRequest.description
-    );
+    if (patchRequest.description.length > 0) {
+      await expensesRepository.updateExpenseDescription(
+        patchRequest.id,
+        patchRequest.description
+      );
+    } else {
+      await expensesRepository.deleteExpense(patchRequest.id);
+    }
   }
+
   if ("monthIndex" in patchRequest) {
     const expenseRecordExists = await expensesRepository.expenseRecordExists(
       patchRequest.id,
       patchRequest.monthIndex
     );
     if (expenseRecordExists) {
-      await expensesRepository.updateExpenseMonthIndex(
-        patchRequest.id,
-        patchRequest.monthIndex,
-        parseToCents(patchRequest.amount)
-      );
+      if (patchRequest.amount) {
+        await expensesRepository.updateExpenseMonthIndex(
+          patchRequest.id,
+          patchRequest.monthIndex,
+          parseToCents(patchRequest.amount)
+        );
+      } else {
+        await expensesRepository.deleteExpenseRecord(
+          patchRequest.id,
+          patchRequest.monthIndex
+        );
+      }
     } else {
       await expensesRepository.insertExpenseRecord(
         patchRequest.id,

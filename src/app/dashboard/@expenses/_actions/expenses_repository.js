@@ -1,4 +1,4 @@
-import { query } from "@/database/db.js";
+import { getClient, query } from "@/database/db.js";
 
 export async function getAllExpenses() {
   const myQuery = `
@@ -77,4 +77,38 @@ export async function insertExpenseRecord(
   const res = await query(myQuery, [expense_id, year, monthIndex, amount]);
   console.log("repository.insertExpenseRecord() result: ", res.rows);
   return res.rows[0];
+}
+
+export async function deleteExpense(id) {
+  const myQuery1 = `
+    delete from expense_record where expense_id = $1;
+  `;
+
+  const myQuery2 = `
+    delete from expense where id = $1;
+  `;
+
+  const client = await getClient();
+
+  try {
+    await client.query("BEGIN");
+    await client.query(myQuery1, [id]);
+    await client.query(myQuery2, [id]);
+    await client.query("COMMIT");
+  } catch (e) {
+    console.log(e);
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
+  }
+}
+
+export async function deleteExpenseRecord(expenseId, monthIndex) {
+  const myQuery = `
+    delete from expense_record where expense_id = $1 and month = $2 returning *;
+    `;
+
+  const res = await query(myQuery, [expenseId, monthIndex]);
+  console.log("repository.deleteExpenseRecord() result: ", res.rows);
 }

@@ -36,9 +36,8 @@ const months = [
   { code: "Dec", index: 11 },
 ];
 
-// TODO remove description should remove row
-// TODO remove values from months
 // TODO add toast for better feedback
+// FIXME there is a bug when removing the value of a month. It should clear the text after submission, but it doesn't even though the value is cleared
 
 export default function YearlyExpenses({ rows }) {
   const [showEditNewRow, setShowEditNewRow] = useState(false);
@@ -79,37 +78,25 @@ export default function YearlyExpenses({ rows }) {
     }
   };
 
-  const totalWithLeisureRow = {
-    name: "Total with leisure",
-    totalAmountJan: 8888,
-    totalAmountFeb: 100,
-    totalAmountMar: 100,
-    totalAmountApr: 100,
-    totalAmountMay: 300,
-    totalAmountJun: 500,
-    totalAmountJul: 100,
-    totalAmountAug: 600,
-    totalAmountSep: 100,
-    totalAmountOct: 700,
-    totalAmountNov: 100,
-    totalAmountDec: 800,
-  };
+  const totalEssentials = makeTotalByTypes(
+    rows,
+    ["ESSENTIALS"],
+    "Essentials total: "
+  );
 
-  const totalWithoutLeisureRow = {
-    name: "Total without leisure",
-    totalAmountJan: 8888,
-    totalAmountFeb: 100,
-    totalAmountMar: 100,
-    totalAmountApr: 100,
-    totalAmountMay: 300,
-    totalAmountJun: 500,
-    totalAmountJul: 100,
-    totalAmountAug: 600,
-    totalAmountSep: 100,
-    totalAmountOct: 700,
-    totalAmountNov: 100,
-    totalAmountDec: 800,
-  };
+  const totalInvestment = makeTotalByTypes(
+    rows,
+    ["INVESTMENT"],
+    "Investment total: "
+  );
+
+  const totalLeisure = makeTotalByTypes(rows, ["LEISURE"], "Leisure total: ");
+
+  const totalAllTypes = makeTotalByTypes(
+    rows,
+    ["ESSENTIALS", "INVESTMENT", "LEISURE"],
+    "All types total: "
+  );
 
   return (
     <>
@@ -205,28 +192,10 @@ export default function YearlyExpenses({ rows }) {
                 )}
               </TableCell>
             </TableRow>
-            {/* <TableRow>
-              <TableCell>{totalWithLeisureRow.name}</TableCell>
-              {columns.map(
-                (column, index) =>
-                  column !== "" && (
-                    <TableCell key={`'totalWithLeisure-${index}`}>
-                      {totalWithLeisureRow[`totalAmount${column}`]}
-                    </TableCell>
-                  )
-              )}
-            </TableRow>
-            <TableRow>
-              <TableCell>{totalWithoutLeisureRow.name}</TableCell>
-              {columns.map(
-                (column, index) =>
-                  column !== "" && (
-                    <TableCell key={`'totalWithoutLeisure-${index}`}>
-                      {totalWithoutLeisureRow[`totalAmount${column}`]}
-                    </TableCell>
-                  )
-              )}
-            </TableRow> */}
+            {totalEssentials}
+            {totalInvestment}
+            {totalLeisure}
+            {totalAllTypes}
           </TableBody>
         </Table>
       </TableContainer>
@@ -239,5 +208,40 @@ function getAmountForMonth(expense, monthIndex) {
     expense.expenseRecords
       .filter((expense) => expense.month === monthIndex)
       .pop()?.amount || null
+  );
+}
+
+function makeTotalByTypes(expenses, types, label) {
+  let cells = [];
+  const expenseRecords = expenses
+    .filter((expense) => types.includes(expense.type))
+    .map((expense) => expense.expenseRecords)
+    .flat();
+
+  for (let i = 0; i < 11; i++) {
+    const amountForMonth = expenseRecords
+      .filter((rec) => rec.month === i)
+      .reduce((acc, rec) => acc + rec.amount, 0);
+    const cell = (
+      <TableCell key={`cell-${types}-${i}`}>
+        {amountForMonth > 0 && (
+          <NumericFormat
+            value={amountForMonth}
+            displayType="text"
+            {...NumericFormatProps}
+          />
+        )}
+      </TableCell>
+    );
+    cells.push(cell);
+  }
+
+  return (
+    <TableRow>
+      <TableCell>
+        <Typography>{label}</Typography>
+      </TableCell>
+      {cells}
+    </TableRow>
   );
 }
