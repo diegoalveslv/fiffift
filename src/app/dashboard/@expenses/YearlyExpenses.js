@@ -7,14 +7,18 @@ import {
   Button,
   CircularProgress,
   InputAdornment,
+  Paper,
   Table,
   TableBody,
   TableCell,
   TableContainer,
+  TableFooter,
   TableHead,
   TableRow,
   TextField,
   Typography,
+  styled,
+  tableCellClasses,
 } from "@mui/material";
 import { useState, useTransition } from "react";
 import { NumericFormat } from "react-number-format";
@@ -35,6 +39,17 @@ const months = [
   { code: "Nov", index: 10 },
   { code: "Dec", index: 11 },
 ];
+
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  [`&.${tableCellClasses.head}`]: {
+    backgroundColor: theme.palette.primary.dark,
+    color: theme.palette.getContrastText.apply,
+  },
+  [`&.${tableCellClasses.body}`]: {
+    fontSize: 16,
+    fontWeight: theme.typography.fontWeightBold,
+  },
+}));
 
 // TODO add toast for better feedback
 // FIXME there is a bug when removing the value of a month. It should clear the text after submission, but it doesn't even though the value is cleared
@@ -100,13 +115,13 @@ export default function YearlyExpenses({ rows }) {
 
   return (
     <>
-      <TableContainer>
+      <TableContainer component={Paper}>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Description</TableCell>
+              <StyledTableCell>Description</StyledTableCell>
               {months.map((month) => (
-                <TableCell key={month.code}>{month.code}</TableCell>
+                <StyledTableCell key={month.code}>{month.code}</StyledTableCell>
               ))}
             </TableRow>
           </TableHead>
@@ -137,7 +152,7 @@ export default function YearlyExpenses({ rows }) {
                       autoFocus
                     />
                   ) : (
-                    <Typography sx={{ cursor: "pointer" }}>
+                    <Typography sx={{ cursor: "pointer" }} fontWeight="bold">
                       {row.description}
                     </Typography>
                   )}
@@ -192,11 +207,13 @@ export default function YearlyExpenses({ rows }) {
                 )}
               </TableCell>
             </TableRow>
+          </TableBody>
+          <TableFooter>
             {totalEssentials}
             {totalInvestment}
             {totalLeisure}
             {totalAllTypes}
-          </TableBody>
+          </TableFooter>
         </Table>
       </TableContainer>
     </>

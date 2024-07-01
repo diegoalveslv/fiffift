@@ -54,7 +54,7 @@ export class ExpensesSummary {
     ];
   }
 
-  makeExpensesTableRows() {
+  makeExpensesTableRows({ StyledTableCell }) {
     const maxRows = Math.max(
       this.essentialsExpenses.length,
       this.investmentExpenses.length,
@@ -69,7 +69,7 @@ export class ExpensesSummary {
 
       const cells = (
         <>
-          <TableCell>{essentialsExpense?.description}</TableCell>
+          <StyledTableCell>{essentialsExpense?.description}</StyledTableCell>
           <TableCell>
             <NumericFormat
               value={essentialsExpense?.averageAmount}
@@ -179,6 +179,15 @@ export class ExpensesSummary {
 
     const customNumericProps = { ...NumericFormatProps, allowNegative: true };
 
+    const essentialsStyle =
+      diffEssentials > 0 ? { color: "green" } : { color: "tomato" };
+
+    const investmentStyle =
+      diffInvestment > 0 ? { color: "green" } : { color: "tomato" };
+
+    const leisureStyle =
+      diffLeisure > 0 ? { color: "green" } : { color: "tomato" };
+
     return (
       <TableRow>
         <TableCell>
@@ -188,6 +197,7 @@ export class ExpensesSummary {
           <NumericFormat
             value={diffEssentials}
             displayType="text"
+            style={essentialsStyle}
             {...customNumericProps}
           />
         </TableCell>
@@ -196,6 +206,7 @@ export class ExpensesSummary {
           <NumericFormat
             value={diffInvestment}
             displayType="text"
+            style={investmentStyle}
             {...customNumericProps}
           />
         </TableCell>
@@ -204,6 +215,7 @@ export class ExpensesSummary {
           <NumericFormat
             value={diffLeisure}
             displayType="text"
+            style={leisureStyle}
             {...customNumericProps}
           />
         </TableCell>

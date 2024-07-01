@@ -1,14 +1,29 @@
 "use client";
 import {
+  Paper,
   Table,
   TableBody,
   TableCell,
   TableContainer,
+  TableFooter,
   TableHead,
   TableRow,
   Typography,
+  styled,
+  tableCellClasses,
 } from "@mui/material";
 import { ExpensesSummary } from "./ExpensesSummary";
+
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  [`&.${tableCellClasses.head}`]: {
+    backgroundColor: theme.palette.primary.dark,
+    color: theme.palette.getContrastText.apply,
+  },
+  [`&.${tableCellClasses.body}`]: {
+    fontSize: 16,
+    fontWeight: theme.typography.fontWeightBold,
+  },
+}));
 
 export default function SummaryGrid({ incomeIdealDivision, expensesAverage }) {
   const expensesSummary = new ExpensesSummary(
@@ -18,7 +33,9 @@ export default function SummaryGrid({ incomeIdealDivision, expensesAverage }) {
 
   const headerColumns = expensesSummary.makeHeaders();
 
-  const expensesTableRows = expensesSummary.makeExpensesTableRows();
+  const expensesTableRows = expensesSummary.makeExpensesTableRows({
+    StyledTableCell,
+  });
 
   const totalPerTypeTableRow = expensesSummary.makeTotalPerTypeTableRow();
 
@@ -30,24 +47,24 @@ export default function SummaryGrid({ incomeIdealDivision, expensesAverage }) {
 
   return (
     <>
-      <TableContainer>
-        <Table stickyHeader aria-label="sticky table">
+      <TableContainer component={Paper}>
+        <Table>
           <TableHead>
             <TableRow>
               {headerColumns.map((column) => (
-                <TableCell key={column.id} align="center" colSpan={2}>
-                  <Typography>{column.header}</Typography>
+                <StyledTableCell key={column.id} align="center" colSpan={2}>
+                  <Typography fontWeight="bold">{column.header}</Typography>
                   <Typography variant="subtitle1">{column.subtitle}</Typography>
-                </TableCell>
+                </StyledTableCell>
               ))}
             </TableRow>
           </TableHead>
-          <TableBody>
-            {expensesTableRows}
+          <TableBody>{expensesTableRows}</TableBody>
+          <TableFooter>
             {totalPerTypeTableRow}
             {differencePerTypeTableRow}
             {totalAndAmountLeftTableRow}
-          </TableBody>
+          </TableFooter>
         </Table>
       </TableContainer>
     </>

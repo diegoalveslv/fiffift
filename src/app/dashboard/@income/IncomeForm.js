@@ -6,8 +6,7 @@ import { useState } from "react";
 import { useFormState } from "react-dom";
 import { saveIncome } from "./_actions/income_actions";
 
-/*
-TODO add loading to fields
+/*TODO add loading to fields
 TODO handle unexpected database errors
 TODO add toast after submitting
  */
@@ -42,7 +41,6 @@ export default function IncomeForm({ formData }) {
   return (
     <form action={formAction}>
       <Grid container spacing={2}>
-        {/* todo format it as money */}
         <Grid item xs={12}>
           <TextField
             name="salary"
