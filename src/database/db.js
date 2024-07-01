@@ -1,13 +1,11 @@
 import pg from "pg";
 const { Pool } = pg;
 
-/*TODO use environment variables */
-
 const pool = new Pool({
-  user: "fiffift",
+  user: process.env.DATABASE_USER,
   host: "localhost",
   database: "postgres",
-  password: "fiffift",
+  password: process.env.DATABASE_PASSWORD,
   port: 5432,
   max: 20,
   idleTimeoutMillis: 30000,
