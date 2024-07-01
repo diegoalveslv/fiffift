@@ -54,25 +54,4 @@ CREATE TABLE fiffift.expense_record(
     constraint expense_record_uq1 unique (expense_id, year, month)
 );
 
--- Insert into fiffift.expense table
-INSERT INTO fiffift.expense (id, description, type, recurrent) VALUES
-(1, 'Gas bills', 'ESSENTIAL', true),
-(2, 'Sports bets', 'INVESTMENT', true),
-(3, 'Credit Card', 'LEISURE', true);
-
--- Insert into fiffift.expense_record table
-INSERT INTO fiffift.expense_record (id, expense_id, year, month, amount) VALUES
-(1, 1, 2024, 4, 124),
-(2, 1, 2024, 5, 41),
-(3, 1, 2024, 6, 13),
-(4, 2, 2024, 0, 1434),
-(5, 2, 2024, 3, 654),
-(6, 2, 2024, 4, 4565),
-(7, 3, 2024, 3, 23435),
-(8, 3, 2024, 6, 324),
-(9, 3, 2024, 11, 12);
-
-select setval('fiffift.expense_id_seq', (select max(id) + 1 from fiffift.expense));
-select setval('fiffift.expense_record_id_seq', (select max(id) + 1 from fiffift.expense_record));
-
 EOSQL

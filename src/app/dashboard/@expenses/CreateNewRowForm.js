@@ -53,7 +53,7 @@ export default function CreateNewRowForm({ toggleAddNewRowForm }) {
           name="type"
           label="Type"
           required
-          value={expenseTypes[0].value}
+          defaultValue={expenseTypes[0].value}
         >
           {expenseTypes.map((type) => (
             <MenuItem key={type.value} value={type.value}>

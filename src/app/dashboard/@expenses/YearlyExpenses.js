@@ -36,6 +36,10 @@ const months = [
   { code: "Dec", index: 11 },
 ];
 
+// TODO remove description should remove row
+// TODO remove values from months
+// TODO add toast for better feedback
+
 export default function YearlyExpenses({ rows }) {
   const [showEditNewRow, setShowEditNewRow] = useState(false);
   const [editingCell, setEditingCell] = useState({

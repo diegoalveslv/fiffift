@@ -2,7 +2,6 @@ import { query } from "@/database/db.js";
 
 /*TODO - there is no audit
 TODO - logs are weird
-TODO - there is no indexes, which is okay for now. Just keep an eye on it
  */
 
 export async function createIncome(income) {
@@ -11,7 +10,7 @@ export async function createIncome(income) {
       VALUES ($1, $2, $3)
       RETURNING *;
     `;
-  const values = [income.salary, income.mealTicket, income.extras];
+  const values = [income.salary, income.mealTicket || 0, income.extras || 0];
 
   try {
     const res = await query(myQuery, values);
