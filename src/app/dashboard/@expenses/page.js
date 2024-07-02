@@ -7,7 +7,7 @@ export default async function ExpensesPage() {
 
   return (
     <Container component={Paper} sx={{ py: 2 }}>
-      <Typography variant="h4">Yearly expenses</Typography>
+      <Typography variant="h4">Yearly Expenses</Typography>
       <YearlyExpenses rows={expenseRows} />
     </Container>
   );
