@@ -31,7 +31,7 @@ export default async function SummaryPage() {
       severity: "warning",
       message: (
         <Typography>
-          If I get fucked, my monthly cost of living is:{" "}
+          If I get screwed, my monthly cost of living is:{" "}
           <NumericFormatTextDisplay value={monthlyCostOfLiving} />
           {"  "}
           (x4 = <NumericFormatTextDisplay value={monthlyCostOfLiving * 4} />)
